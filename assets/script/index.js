@@ -165,7 +165,7 @@ try {
     beat = 750,
     music = document.createElement("audio"),
     danced = !1;
-    music.innerHTML = '<source src="./static/8bittry.mp3" type="audio/mpeg" /><source src="./static/8bittry.ogg" type="audio/ogg" />',
+    music.innerHTML = '<source src="/assets/others/8bittry.mp3" type="audio/mpeg" /><source src="/assets/others/8bittry.ogg" type="audio/ogg" />',
     music.setAttribute("loop", "true"),
     music.loop = !0,
     music.style.opacity = "0",
