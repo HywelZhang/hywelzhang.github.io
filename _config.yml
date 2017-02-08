@@ -14,11 +14,11 @@ filter: 'category'
 recent_num: 20
 
 # Social account
-twitter: Hywel
-weibo: s
+#twitter: Hywel
+#weibo: s
 github: hywelZhang
-instagram: s
-linkedin: s
+#instagram: s
+linkedin: 华伟-张-b51695b5
 
 # avatar and Favicon
 #avatar: http://7u2ho6.com1.z0.glb.clouddn.com/site-avatar.png
@@ -26,12 +26,12 @@ linkedin: s
 
 # disqus config
 disqus:
-  shortname: suyan-zh
+  shortname: hywel
 
 # google analytics config
 ga:
   id: UA-54767140-1
-  url: yansu.org
+  url: hywelzhang.github.io
 
 # Build settings
 permalink: /:year/:month/:day/:title.html
