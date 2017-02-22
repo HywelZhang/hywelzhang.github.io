@@ -15,14 +15,15 @@ categories: HBase
 	
 ## HBase存储格式
 
-1. **数据在RMDB**
+1.**数据在RMDB**
 
-|  ID	| 姓名 | 性别 | 密码|时间戳|
-|:----:|:-----:|-------|------|--------|
-| 1	| 张三 | 男    |111  |20160719|
-| 2	| 李四 | 男	   |222  |20160720|
+|  ID		|     姓名     |     性别     |     密码    |    时间戳|
+|:----------:|:------------:|:------------:|:-----------:|:------------:|
+|     1	|     张三     |     男        |    111      |20160719|
+|     2	|     李四     |     男	   |    222      |20160720|
 
-2. **数据在HBase中** 
+<br>
+2.**数据在HBase中** 
 
 |Row-Key	|CF:Column-Key|时间戳|Cell Value|
 |:----:|---|----|---|
@@ -55,16 +56,14 @@ categories: HBase
 	> scan 'tableName',{VERSIONS => 2}
 	  
 	  <font color=fuchsia>**BLOOMFILTER**</font>
-	  布隆过滤器，优化HBase的随机读取性能，可选值NONE|ROW|ROWCOL，默认为NONE，该参数可以单独对某个列簇启用。启用过滤器，对于get操作以及部分scan操作可以剔除掉不会用到的存储文件，减少实际IO次数，提高随机读性能。Row类型适用于只根据Row进行查找，而RowCol类型适用于根据Row+Col联合查找，如下：
-
- 	Row类型适用于：get ‘tableName’,’row1′
-
-	RowCol类型适用于：get ‘tableName’,’row1′,{COLUMN => ‘Column’}
-
-	对于有随机读的业务，建议开启Row类型的过滤器，使用空间换时间，提高随机读性能。
 	  
+	  布隆过滤器，优化HBase的随机读取性能，可选值NONE|ROW|ROWCOL，默认为NONE，该参数可以单独对某个列簇启用。启用过滤器，对于get操作以及部分scan操作可以剔除掉不会用到的存储文件，减少实际IO次数，提高随机读性能。Row类型适用于只根据Row进行查找，而RowCol类型适用于根据Row+Col联合查找，如下：
+Row类型适用于：get ‘tableName’,'row1'
+RowCol类型适用于：get ‘tableName’,’row1′,{COLUMN => ‘Column’}
+对于有随机读的业务，建议开启Row类型的过滤器，使用空间换时间，提高随机读性能。
 	  
 	<font color=fuchsia>**COMPRESSION**</font>
+	
 	数据压缩方式，HBase支持多种形式的数据压缩，一方面减少数据存储空间，一方面降低数据网络传输量进而提升读取效率。目前HBase支持的压缩算法主要包括三种：GZip | LZO | Snappy，下面表格分别从压缩率，编解码速率三个方面对其进行对比：
 
 	Snappy的压缩率最低，但是编解码速率最高，对CPU的消耗也最小，目前一般建议使用Snappy
@@ -125,3 +124,5 @@ enable 'NewTableName'
 
 + 删除列簇
 >alter 't1', NAME => 'f1', VERSIONS => 5
+
+
