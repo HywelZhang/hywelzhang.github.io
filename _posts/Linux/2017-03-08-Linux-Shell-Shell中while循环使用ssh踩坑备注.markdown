@@ -4,7 +4,7 @@ layout: post
 title: "Shell脚本中，while循环使用ssh注意事项"
 description: "Shell脚本中，While循环下使用ssh踩坑记录"
 date: 星期三, 08. 三月 2017  3:45下午
-categories: 
+categories: Linux
 ---
 最近在写一个脚本，读取一个IP文件，遍历ssh后执行一些操作。但是很奇怪，永远在连上第一个IP以后，循环就结束了，不会对下面的IP进行遍历。
 
