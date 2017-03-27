@@ -1,8 +1,8 @@
 ---
 Author: Hywel
 layout: post
-title: "shell基本命令及参数" 
-description: "Linux shell常用命令及参数"
+title: "Linux Shell中的if判断及参数" 
+description: "Linux shell中如何使用if语句？if判断中各种参数是什么意思"
 date: 星期一, 06. 三月 2017  3:07下午
 categories: "Linux"
 ---
