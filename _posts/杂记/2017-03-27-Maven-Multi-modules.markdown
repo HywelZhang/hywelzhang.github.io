@@ -128,15 +128,12 @@ categories: 杂记
 ```
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.sfexpress</groupId>
-  <artifactId>ddt-spark</artifactId>
+  <groupId>com.test</groupId>
+  <artifactId>test-project</artifactId>
   <version>1.0-SNAPSHOT</version>
   <modules>
-    <module>home-page</module>
-    <module>data-receive</module>
-    <module>comments-analysis</module>
-    <module>order-life</module>
-    <module>sale-promot</module>
+    <module>test-module1</module>
+    <module>test-module2</module>
   </modules>
   <packaging>pom</packaging>
   <inceptionYear>2017</inceptionYear>
@@ -261,39 +258,19 @@ categories: 杂记
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.sfexpress</groupId>
-        <artifactId>ddt-spark</artifactId>
+        <groupId>com.test</groupId>
+        <artifactId>test-project</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>data-receive</artifactId>
+    <artifactId>test-module1</artifactId>
     <inceptionYear>2017</inceptionYear>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>0.8.2.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.101tec</groupId>
-            <artifactId>zkclient</artifactId>
-            <version>0.3</version>
-        </dependency>
-        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.28</version>
-        </dependency>
-        <dependency>
-            <groupId>io.spray</groupId>
-            <artifactId>spray-json_2.10</artifactId>
-            <version>1.3.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>1.7.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
