@@ -27,21 +27,18 @@
 
   <div id="sidebar-right">
     <div id="search-box">
-      <form method="get" action="//www.google.com/search" target="_blank">
-        <input id="search-input" name="q" type="text" placeholder="Search" />
-        <input type="hidden" name="sitesearch" value="{{ site.url }}">
-      </form>
+      <input id="search-input" type="text" placeholder="Search" />
     </div>
 
     <nav id="toc">
       {% if site.filter == 'category' %}
-        {% for post in site.posts %}
+        {% for post in site.posts reversed %}
           <a class="toc-link" data-tags="{{ post.categories | join: ' ' }}" href="{{ post.url }}">
             {{ post.title }}
           </a>
         {% endfor %}
       {% elsif site.filter == 'tag' %}
-        {% for post in site.posts %}
+        {% for post in site.posts reversed %}
           <a class="toc-link" data-tags="{{ post.tags | join: ' ' }}" href="{{ post.url }}">
             {{ post.title }}
           </a>

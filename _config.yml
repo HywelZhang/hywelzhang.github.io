@@ -11,7 +11,7 @@ author: Hywel
 # Sidebar filter
 # Choose 'tag' or 'category' as filter in sidebar.
 filter: 'category'
-recent_num: 20
+recent_num: 15
 
 # Social account
 #twitter: Hywel
