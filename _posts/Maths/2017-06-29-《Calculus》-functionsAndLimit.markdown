@@ -1,7 +1,7 @@
 ---
 Author: Hywel
 layout: post
-title: 《culculus》第一章 函数和极限
+title: 《Culculus》第一章 函数和极限
 description: 
 date: 星期四, 29. 六月 2017  2:38下午
 categories: Maths 
@@ -21,13 +21,13 @@ categories: Maths
 函数的基本变换可用下面两个图归纳
 
 函数平移：
-![平移](/assets/image/postImg/Mathematics/calculus1/figure1-translate.png)
+![平移](/assets/image/postImg/Maths/calculus/chapter1/figure1-translate.png)
 
 对于f(x)整体乘积，相当于对函数图像进行高矮处理：
-![延伸](/assets/image/postImg/Mathematics/calculus1/figure2-stretch.png)
+![延伸](/assets/image/postImg/Maths/calculus/chapter1/figure2-stretch.png)
 
 对于f(x)中x的乘积，相当于对图像的拉伸或者紧缩：
-![对比](/assets/image/postImg/Mathematics/calculus1/figure3.png)
+![对比](/assets/image/postImg/Maths/calculus/chapter1/figure3.png)
 
 ### 三. 复合函数
 1. 对两个函数f(x),g(x)进行加减乘除运算。如(f+g)(x)=f(x)+g(x), (fg)(x)=f(x)g(x)。设f(x)和g(x)的定义域分别为A,B，则此时复合函数的定义域为 \\(A \cap B\\) 
@@ -62,6 +62,6 @@ categories: Maths
 \\[\lim\limits_{x \to a}f(x) = L\\]
 
 记一个常见极限图像在这
-![sinx/x](/assets/image/postImg/Mathematics/calculus1/figure4.png)
+![sinx/x](/assets/image/postImg/Maths/calculus/chapter1/figure4.png)
 
 
