@@ -37,3 +37,42 @@ categories: Maths
 <div  align="left" style="display:inline-block;width:300px;margin-right:50px;"><img src="/assets/image/postImg/Maths/calculus/chapter2/figure4.png" style="width:100%;border-width:0;    " height = "200" alt="figure4"/><h5 style="text-align:center;margin:0;line-height:30px;">Figure-1</h5></div>
 <div  align="right" style="display:inline-block;width:100%;"><img src="/assets/image/postImg/Maths/calculus/chapter2/figure5.png" style="width:100%;border-width:0;" height = "250"     alt="figure5" /><h5 style="text-align:center;margin:0;line-height:30px;">Figure-2</h5></div>
 </div>
+
+## 高阶导数
+f''(x) = [f'(x)]'(x)
+
+## 导数常用计算公式
+### 求导基本公式
+1. \\(\frac{d}{dx}(c) = 0\\) （常数导数恒等于0。y=c的直线，随便哪点斜率都是0，so...）
+2. \\(\frac{d}{dx}(x^n) = nx^{n-1}\\) 
+3. \\(\frac{d}{dx}[cf(x)] = c\frac{d}{dx}f(x)\\) 如下图，实际就是c倍斜率，更陡的坡度：
+![figure6](/assets/image/postImg/Maths/calculus/chapter2/figure6.png)
+4. \\(\frac{d}{dx}[f(x) \pm g(x)] = \frac{d}{dx}f(x) \pm \frac{d}{dx}g(x)\\) 
+5. \\(\frac{d}{dx}[f(x)g(x)] = f(x)\frac{d}{dx}[g(x)] + g(x)\frac{d}{dx}[f(x)]\\)
+6. \\(\frac{d}{dx}[\frac{f(x)}{g(x)}] = \frac{g(x)\frac{d}{dx}[f(x)] - f(x)\frac{d}{dx}[g(x)]}{[g(x)]^2}\\)
+
+### 三角函数求导公式：  
+![figure7](/assets/image/postImg/Maths/calculus/chapter2/figure7.png)
+
+### 复合求导：  
+![figure8](/assets/image/postImg/Maths/calculus/chapter2/figure8.png)
+一层一层求导下去  
+
+### 线性化
+根据导数，我们很容易得到当x接近a点时有这个式子： \\(f(x) \approx f(a) + f'(a)(x-a)\\) ,如下图所示（ f(a)的值加上 f'(x)斜率 × (x-a) = y的增量）。
+![figure9](/assets/image/postImg/Maths/calculus/chapter2/figure9.png)
+这样可以利用导数和a点得到一个函数，用于求得函数在a点附近的值： \\[F(x) = f(a) + f'(a)(x - a)\\] F(x)称为f在a点的线性化（linearization of f at a）  
+
+**Example**  
+求函数\\(\sqrt{x + 3}\\)在a = 1附近，例如\\(\sqrt{3.98}\\)和\\(\sqrt{4.05}\\)的值  
+解： 首先 \\(f'(x) = \frac{1}{2\sqrt{x + 3}}\\) , f(1) = 2 ,f'(1) = 1/4  
+带入上面线性化公式，得到  \\(L(x) = f(1) + f'(1)(x-1) = \frac{7}{4} + \frac{x}{4}\\)  
+这样我们就有，当x趋近于1时，有 \\(\sqrt{x + 3} \approx \frac{7}{4} + \frac{x}{4}\\)   
+计算 \\(\sqrt{3.98} \approx \frac{7}{4} + \frac{0.98}{4} = 1.995\\) , 这样就能将不好算的结果通过导数间接计算出来。计算出的结果和图像如下图：
+<div style="text-align:center;">
+<div  align="left" style="display:inline-block;width:300px;margin-right:10px;"><img src="/assets/image/postImg/Maths/calculus/chapter2/figure10.png" style="width:100%;border-width:0;" height = "200" alt="figure10"/><h5 style="text-align:center;margin:0;line-height:30px;">计算结果对比</h5></div>
+<div  align="right" style="display:inline-block;width:300px;"><img src="/assets/image/postImg/Maths/calculus/chapter2/figure11.png" style="width:100%;border-width:0;" height = "250"     alt="figure11" /><h5 style="text-align:center;margin:0;line-height:30px;">Figure-11 根号x+3的函数图像</h5></div>
+</div>
+如图Figure-11,图像越趋近于a点，计算结果越接近原始的f(x)值
+
+
