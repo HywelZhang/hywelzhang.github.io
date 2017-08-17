@@ -8,7 +8,7 @@ Spark程序提交作业主要有三种运行模式，Standalong，Spark On Yarn 
 
 ## Spark On Yarn Cluster
 
-![SparkOnYarnCluster](/assets/image/postImg/Spark/Spark-yarn-cluster.jpg)
+![SparkOnYarnCluster](/assets/image/postImg/Spark/spark-yarn-cluster.jpg)
 
 1. 客户端提交一个应用程序，请求一个Application ID。
 2. 如果请求成功，返回一个Application ID，RM（Resource Manager）会决定在某个Container里运行Application Master，并在RM上注册。
