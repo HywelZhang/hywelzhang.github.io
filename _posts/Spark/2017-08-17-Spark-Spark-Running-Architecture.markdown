@@ -2,7 +2,7 @@
 layout: post
 title: "Spark运行时架构"
 date: 星期三, 08. 二月 2017 09:39上午 
-categories: Spark;大数据架构
+categories: Spark
 ---
 Spark程序提交作业主要有三种运行模式，Standalong，Spark On Yarn Cluster，Spark On Yarn Client模式，先就生产环境使用最多的Spark On Yarn Cluster模式
 
@@ -18,7 +18,7 @@ Spark程序提交作业主要有三种运行模式，Standalong，Spark On Yarn 
 6. NN初始化和启动Excutor。
 7. Application Master将job拆分后的task分配到Excutor上运行。
 8. Excutor将输出返回给Application Master。
-8. 程序结束时，在AM结束前，还会将应用程序日志持久化到HDFS上再释放。
+9. 程序结束时，在AM结束前，还会将应用程序日志持久化到HDFS上再释放。
 
 ## Spark On Yarn Client
 和上述模式很相似，不同之处在于，drive是在客户端，支持客户端与driver交互
