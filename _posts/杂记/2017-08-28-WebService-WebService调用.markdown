@@ -11,7 +11,7 @@ categories: 杂记
 WebService是一种跨编程语言和跨操作系统平台的远程调用技术。大白话就是，去调用一个远程服务，这就要求跨语言和平台。例如，调用银行的支付接口等。
 
 ## 二.Web Service架构
-WebService平台由XML+XSD,SOAP和WSDL三大技术构成。
+WebService平台由SOAP,WSDL和UDDI三大技术构成。
 
 ### 1.SOAP（Simple Object Access Protocol，即简单对象访问协议）
 交换数据的一种协议规范。包含一个基于XML的可扩展消息信封格式，还需同时绑定一个网络传输协议。这个协议通常是HTTP或HTTPS，但也可能是SMTP或XMPP。一个简单的例子来说明SOAP使用过程，一个SOAP消息可以发送到一个具有Web Service功能的Web站点，例如，一个含有房价信息的数据库，消息的参数中标明这是一个查询消息，此站点将返回一个XML格式的信息，其中包含了查询结果（价格，位置，特点，或者其他信息）。由于数据是用一种标准化的可分析的结构来传递的，所以可以直接被第三方站点所利用。
