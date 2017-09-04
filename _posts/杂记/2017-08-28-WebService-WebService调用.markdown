@@ -52,7 +52,7 @@ Object[] objects = client.invoke(params);
 
 ```
 
-由于应用场景稍微比较特殊，使用scala编写的spark程序调用一个远程web service服务。本地测试虽然通过，但是上生产集群环境挂掉，在创建client时报错如下（如果有大神知道原因，希望能邮件我 godbewithyou1314@gmail.com,非常感谢）：
+由于应用场景稍微比较特殊，使用scala编写的spark程序调用一个远程web service服务。本地测试虽然通过，但是上生产集群环境挂掉，在创建client时报错如下（如果有大神知道原因，希望能邮件我 godbewithyou1314@gmail.com,非常感谢）(问题终于解决，不是由于集群原因，而是由于maven打包方式造成的)：
 ```
  11:41:48 ERROR yarn.ApplicationMaster: User class threw exception: java.lang.NullPointerException
 java.lang.NullPointerException
@@ -72,14 +72,87 @@ java.lang.NullPointerException
 
 ```
 
+**解决办法**
+放弃maven-assembly-plugin的打包方式，因为assembly不允许META-INF/\*下有可变部分存在。所以遇到上述问题，修改mavan的打包方式为shade plugin。具体配置如下：
+
+```
+ <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <!--  transformers for CXF (see http://stackoverflow.com/a/9069435/61298) -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/com.sun.tools.xjc.Plugin</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/cxf/cxf.extension</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/extensions.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/cxf/extensions.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/cxf/bus-extensions.txt</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/cxf/bus-extensions.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/wsdl.plugin.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/tools.service.validator.xml</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                    <resource>META-INF/cxf/java2wsbeans.xml</resource>
+                                </transformer>
+                            </transformers>
+							<!--移除META-INF下这些文件，防止出现Invalid signature file digest for Manifest main attributes（不可用的数字签名）错误-->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+```
+
 ### 2.通过wdsl2java生成本地client
 
 先将要远程调用的方法代码在本地生成，直接调用
+
 ```
-HelloService service = new HelloService();
-Hello client = service.getHelloHttpPort();
- 
-String result = client.sayHi("Joe");
+ //生成的代码中，你需要调用的服务类
+ SubscriberService sub = new SubscriberService(url,qName);
+ //获取实例对象
+ ISubscriber subscriber = (ISubscriber)sub.getSubscriberServiceImplPort();
+ //调用方法
+ subscriber.Subscribe(params);
+
+ //其他也类似，就是直接调用生成的客户端类，进行需要的方法调用
 
 ```
 
@@ -118,4 +191,15 @@ String result = client.sayHi("Joe");
 
 然后执行`mvn generate-sources`，将会生成本地代码
 
+### 3.jaxwsproxy方式（也需要先生成客户端代码）
 
+```
+JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+//register WebService interface
+factory.setServiceClass(ISubscriber.class);
+//set webservice publish address to factory.
+factory.setAddress("wsdl地址");
+ISubscriber subscriber = (ISubscriber) factory.create();
+subscriber.Subscribe(params);
+
+```
