@@ -1,0 +1,306 @@
+---
+Author: Hywel
+layout: post
+title: 大数据集群搭建之CDH搭建 
+description: CDH集群搭建,cloudera hadoop搭建
+date: 星期五, 03. 十一月 2017  9:54上午
+categories: 大数据架构
+---
+
+本方法采用离线安装，需要先下载好cloudera manager和CDH的parcel安装包。  
+系统为CentOS，jdk版本为1.8，CDH版本5.5.4和5.10.0都安装过，没有区别，所以CDH版本也不影响。
+
+
+## A. 安装jdk
+这一步大家都经常接触，很熟悉，所以这里就只大概叙述  
+
+1. 将下载好的jdk-1.8.tar.gz包解压到指定目录（我习惯是放在/usr/local/java/）  
+2. 配置环境变量，在`/etc/profile`中新增JAVA_HOME，CLASS_PATH，并添加到PATH
+```
+export JAVA_HOME=/usr/local/java/jdk1.8.0_65/
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+export PATH=$JAVA_HOME/bin:$PATH
+```
+> 小备注：配置环境变量的主要目的是将java/bin下边的命令添加到PATH路径，这样能够在任意路径调用java/bin下的执行命令。至于添加CLASS_PATH这个路径是指定java编译运行时可能需要的部分类包的位置。主要是dt.jar和tools.jar，前者主要是Swing包的运行环境类库，后者主要是工具类库，一般java/bin下的命令实际代码是在这个里边实现的。
+
+3. `source /etc/profile` 将配置在当前账户立刻生效。或者重启也可以。
+
+## B. SSH免密互信
+配置集群间的机器免密互信，可以不用密码进行ssh通信
+
+> 原理：所谓"公钥登录"，就是用户将自己的公钥储存在远程主机上。登录的时候，远程主机会向用户发送一段随机字符串，用户用自己的私钥加密后，再发回给远程主机。远程主机用事先储存的公钥进行解密，如果成功，就证明用户是可信的，直接允许登录shell，不再要求密码。
+
+1. 安装SSH服务：
+`yum install openssh-server `
+
+2. 生成公密匙(每台服务器，包含master)：
+`ssh-keygen –t rsa`
+
+3. 将每台服务器的公钥（包含master，得到一份完整的authorized_keys）都拷贝到master的`authorized_keys`:  
+`ssh-copy-id  master@server`（至此master各节点机器可以无密码登录master）
+
+4. 将master上这一份完整的authorized_keys拷贝到各节点机器：  
+`scp ~/.ssh/authorized_keys  spark@slave1:~/.ssh/`
+(实现各机器间可以无密码登录)
+
+## C. 修改hostname和hosts，将节点IP和hostname绑定
+1. 修改hostname（可选）`vim /etc/sysconfig/network`
+```
+NETWORKING=yes
+HOSTNAME=master
+```
+
+2. 修改hosts（/etc/hosts），绑定IP和hostname  
+```
+127.0.0.1 localhost
+(保留本地的对应解析)
+192.168.194.128   master
+192.168.194.129   slave1
+192.168.194.130   slave2
+...
+```
+
+## D. 关闭防火墙和SELinux
+安装CDH需要关闭防火墙和SELinux安全策略
+1. 关闭防火墙
+```
+相关命令：
+service iptables stop （临时关闭）  
+chkconfig iptables off （重启后生效）
+chkconfig --level 35 iptables off （永久关闭）
+/etc/init.d/iptables status （查看防火墙状态）
+```
+
+2. 关闭SELinux  
+`isetenforce 0` （临时生效）或者修改 **/etc/selinux/config** 下的 `SELINUX=disabled` （重启后永久生效）
+
+## E. 配置NTP时间同步服务
+由于分布式集群心跳机制等原因，集群间时间需要保持一致，多以需要配置NTP服务保证时间同步
+主要思路：master节点作为ntp服务器与外界对时中心同步时间，随后对所有datanode节点提供时间同步服务。所有datanode节点以master节点为基础同步时间。
+
+1. 所有节点安装相关组件：yum install ntp。
+2. 配置开机启动：chkconfig ntpd on,
+3. 检查是否设置成功：chkconfig --list ntpd（其中2-5为on状态就代表成功）
+4. 先手动同步一下master的时间 `ntpdate -u 65.55.56.206（手动同步时间）`
+ntp只有一个配置文件`/etc/ntp.conf`,配置好了就OK。这里只给出有用的配置，不需要的配置都用#注掉，这里就不在给出。  
+首先，master的/etc/ntp.conf配置：
+```
+driftfile /var/lib/ntp/drift
+restrict 127.0.0.1
+restrict -6 ::1
+restrict default nomodify notrap 
+server 65.55.56.206 prefer
+includefile /etc/ntp/crypto/pw
+keys /etc/ntp/keys
+```
+配置好后，启动服务`service ntpd start`
+
+5. 检查master的ntp服务是否启动成功
+用ntpstat命令查看同步状态，出现以下状态代表启动成功：
+```
+synchronised to NTP server () at stratum 2
+time correct to within 74 ms
+polling server every 128 s
+```
+如果出现异常请等待几分钟，一般等待5-10分钟才能同步。
+
+6. 节点机器，/etc/ntp.conf配置
+```
+# 配置ntp客户端（所有datanode节点）
+driftfile /var/lib/ntp/drift
+restrict 127.0.0.1
+restrict -6 ::1
+restrict default kod nomodify notrap nopeer noquery
+restrict -6 default kod nomodify notrap nopeer noquery
+#这里是主节点的主机名或者ip
+server master
+includefile /etc/ntp/crypto/pw
+keys /etc/ntp/keys
+```
+修改完成后，先手动与master同步一下`ntpdate -u master (主节点ntp服务器)`。这里可能出现同步失败的情况，请不要着急，一般是本地的ntp服务器还没有正常启动，一般需要等待5-10分钟才可以正常同步。启动服务：`service ntpd start`
+
+## F. 安装MYSQL（可选，如果不安装，则使用cloudera内置的postgreSQL数据库）
+
+1. `yum install mysql-server` 安装mysql服务器
+
+2. `chkconfig mysqld on` 设置开机启动  
+`sudo /sbin/chkconfig --list mysqld`验证是否设置成功（2~5为on表示成功)  
+`service mysqld start`启动mysql服务  
+
+3. 根据提示设置root的初试密码：`mysqladmin -u root password 'xxxx'`
+
+4. `mysql -uroot -pxxxx` 进入mysql命令行，创建以下数据库：
+```
+#hive 用于存放hive的元数据信息
+create database hive DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+#activity monitor 
+create database amon DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+```
+
+5. 授权用户访问MYSQL权限并刷新权限（用户依据自己的来）
+```
+grant all privileges on *.* to 'root'@'n1' identified by 'xxxx' with grant option;
+flush privileges;
+```
+
+6. 配置mysql  
+配置`/etc/my.cnf`文件(包含连接数，缓存大小等，依据需要配置，建议最大连接可以大些，因为集群跑起来可能会占用很多连接，曾经因为这个连接数不够问题，找了好几天bug)   
+
+```
+[mysqld]
+transaction-isolation = READ-COMMITTED
+# Disabling symbolic-links is recommended to prevent assorted security risks;
+# to do so, uncomment this line:
+# symbolic-links = 0
+
+key_buffer = 16M
+key_buffer_size = 32M
+max_allowed_packet = 32M
+thread_stack = 256K
+thread_cache_size = 64
+query_cache_limit = 8M
+query_cache_size = 64M
+query_cache_type = 1
+
+max_connections = 550
+#expire_logs_days = 10
+#max_binlog_size = 100M
+
+#log_bin should be on a disk with enough free space. Replace '/var/lib/mysql/mysql_binary_log' with an appropriate path for your system
+#and chown the specified folder to the mysql user.
+log_bin=/var/lib/mysql/mysql_binary_log
+
+# For MySQL version 5.1.8 or later. Comment out binlog_format for older versions.
+binlog_format = mixed
+
+read_buffer_size = 2M
+read_rnd_buffer_size = 16M
+sort_buffer_size = 8M
+join_buffer_size = 8M
+
+# InnoDB settings
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit  = 2
+innodb_log_buffer_size = 64M
+innodb_buffer_pool_size = 4G
+innodb_thread_concurrency = 8
+innodb_flush_method = O_DIRECT
+innodb_log_file_size = 512M
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+sql_mode=STRICT_ALL_TABLES
+```
+
+## G. 制作本地安装源
+1. 安装httpd（http服务，用于可以使用http访问） 
+`yum install httpd`（安装httpd服务）
+
+2. 安装包制作工具createrepo : 
+`yum install createrepo `
+
+3. 将下载好的cm软件包（cm5.5.2-centos6.tar.gz这个压缩包）解压缩到/var/www/html/mirrors/（解压后文件夹名称假定为cm）
+
+4. 制作本地源
+在cm文件夹同级目录，使用
+`createrepo ./cm `(创建本地源，会在cm下生成相应的repodata文件夹)
+> 踩坑提醒！！！
+>（源制作好后，千万别往源文件夹里修改或增加，不然后续安装过程会出现蜜汁错误，有更改请使用createrepo命令更新或重新制作源  -----by一位踩坑人士）
+
+5. 创建本地源文件
+在/etc/yum.repos.d/目录(该目录下是yum的源文件)下自定义一个myrepo.repo(名字自选)
+```
+[cloudera-manager]
+name = Cloudera Manager, Version 5.5.2
+baseurl = http://<你的主机IP>/mirrors/cm/
+gpgcheck = 0
+```
+
+## H. 制作本地parcel（利用parcel安装CDH中的软件）
+
+将CHD5相关的Parcel包放到主节点的/opt/cloudera/parcel-repo/目录中（parcel-repo需要手动创建）（这是一个固定目录，路径最好别更改)  
+相关的文件如下：  
+    • CDH-5.1.3-1.cdh5.1.3.p0.12-el6.parcel  
+    • CDH-5.1.3-1.cdh5.1.3.p0.12-el6.parcel.sha1  
+    • manifest.json  
+> 最后将CDH-5.1.3-1.cdh5.1.3.p0.12-el6.parcel.sha1，重命名为CDH-5.1.3-1.cdh5.1.3.p0.12-el6.parcel.sha，这点必须注意，否则，系统会重新下载CDH-5.1.3-1.cdh5.1.3.p0.12-el6.parcel文件  
+> 踩坑提醒！！！  
+> **CDH-5.1.3-1.cdh5.1.3.p0.12-el6.parcel.sha中的值是manifest.json中与版本相对应的hash值。请自行查找manifest.json中对应值修改到.sha文件中**
+
+## I. 执行cloudera-manager-installer.bin安装cloudera-manager
+`sudo  ./cloudera-manager-installer.bin –-skip_repo_package=1`  
+（跳过网络安装 ！！！一定需要加**–-skip_repo_package=1**，踩坑提醒） 
+
+> 安装cloudera manage时，踩坑问题指引：
+>    1. 如果在20%处失败（安装oracaljdk时），请先查找自己源中是否有Oraclejdk这个包。如果有，问题多半是因为网络连接问题，你的源没有配置好。检查下列选项：  
+>    • 输入网址127.0.0.1:8080查看能否使用浏览器访问  
+>    • 查看yum本地源是否配置成功，日志会提示网址未找到报错  
+>    • 是否加了—skip_repo_package这个参数，可能是上网去寻找包了  
+>    2. 如果是在40%处失败，我想想~~~  
+>	可能是你以前安装失败过，删除/etc/cloudera文件夹 和/var/lib/cloudera/db.properties 和 忘了（搜索“卸载cloudera-manager”,一定要卸载完全）
+>    3. 失败查日志
+>    4. 安装agent时失败，可能是缺少相关包，详细请看下文的“踩坑集锦03”
+
+## J.数据库连接配置和Agent配置
+1. mysql连接配置
+如果使用了mysql数据库，需要mysql-connector-java-5.1.33-bin.jar，放到/opt/cm-5.1.3/share/cmf/lib/（不一定在此目录，根据自己情况而定。看自己的cmf文件夹在哪里，就放在cmf下的lib目录）
+
+2. Agent配置
+修改/opt/cm-5.1.3/etc/cloudera-scm-agent/config.ini（视自己目录定，我的是在/etc/cloudera-scm-agent/config.ini）中的server_host为主节点的主机名。
+
+3. 同步Agent到其他节点
+`scp -r /opt/cm-5.1.3 root@n2:/opt/`(使用自己目录)
+
+## L. 安装相关hdfs，hive等框架
+安装好cloudera-manager后，可以访问7180端口进入网页管理界面，跟随网页指引，配置集群，选取需要安装的框架服务。至此集群搭建完成。
+
+## 踩坑集锦
+
+1. 安装好cm后，启动失败
+报错信息：
+Unknown host：
+在/etc/hosts里添加一条记录
+
+2. 非root账户配置cm时，在visudo下配置
+cloudera ALL =(ALL) NOPASSWD: ALL
+给用户添加无密码sudo权限
+
+3. 安装cloudera-manager-agent需要提前安装好下列包：
+    +. MySQL-python 
+    +. httpd 
+    +. openssl-devel
+    +. fuse
+    +. python-psycopg2 
+    +. fuse-libs
+    +. mod_ssl
+解决httpd版本不同问题：
+方法一：distro sync 同步版本
+方法二：禁用源，卸载冲突版本，重新安装被需要的版本
+
+4. 云主机上配置hostname和hosts，一定要与云主机名相同(这点可能是由于我的云主机比较特殊，不存在参考价值，不过还是记录下来)
+
+5. 检查主机正确性时出现 “Cloudera 建议将 /proc/sys/vm/swappiness 设置为 0。当前设置为 60。” 的警告，进行如下设定
+`vim /etc/sysctl.conf`添加`vm.swappiness = 0`
+
+6. 检查主机正确性时出现：
+已启用“透明大页面”，它可能会导致重大的性能问题。版本为“/sys/kernel/mm/transparent_hugepage”且发行版为“{1}”的 Kernel 已将 enabled 设置为“{2}”，并将 defrag 设置为“{3}”。请运行“echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag”以禁用此设置，然后将同一命令添加到一个 init 脚本中，如 /etc/rc.local，这样当系统重启时就会予以设置。或者，升级到 RHEL 6.5 或更新版本，它们不存在此错误。将会影响到以下主机：
+解决办法：
+```
+echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag
+vim /etc/rc.local添加
+echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag 
+```
+
+7. 创建 Hive Metastore 数据库表
+**报错信息**：Failed to Create Hive Metastore Database Tables.exec /opt/cloudera/parcels/CDH-5.5.2-1.cdh5.5.2.p0.4/lib/hadoop/bin/hadoop jar /opt/cloudera/parcels/CDH-5.5.2-1.cdh5.5.2.p0.4/lib/hive/lib/hive-cli-1.1.0-cdh5.5.2.jar org.apache.hive.beeline.HiveSchemaTool -verbose -dbType mysql -initSchemaorg.apache.hadoop.hive.metastore.HiveMetaException: Failed to load driverorg.apache.hadoop.hive.metastore.HiveMetaException: Failed to load driver  
+**原因**：我们使用了MySql作为hive的元数据存储，hive默认没有带mysql的驱动，通过以下命令拷贝一个就行了  
+**解决办法**：
+`cp /usr/share/cmf/lib/mysql-connector-java-5.1.26-bin.jar /opt/cloudera/parcels/CDH-5.5.2-1.cdh5.5.2.p0.4/lib/hive/lib/`
+
+8. 在服务 Oozie 上执行命令 Create Oozie Database Tables 失败  
+**报错**：Error: Could not connect to the database: java.lang.ClassNotFoundException: com.mysql.jdbc.Driver  
+原因和解决办法如上一条一样，将mysql连接包放到Oozie/lib下边
+
+
