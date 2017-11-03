@@ -1,7 +1,8 @@
 ---
 Author: Hywel
 layout: post
-title: HBase的三种运行模式Get Start
+title: "HBase的三种运行模式Get Start"
+description: "HBase运行模式，HBase安装指导"
 date: 星期四, 23. 二月 2017 04:00下午 
 categories: HBase 
 ---

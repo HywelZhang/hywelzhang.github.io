@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "【Spark SQL】Spark SQL程序指导【译】"
+description: "Spark2.1 SQL程序指导，DataFrame，DataSets"
 date: 星期三, 08. 二月 2017 09:39上午 
 categories: Spark
 ---
