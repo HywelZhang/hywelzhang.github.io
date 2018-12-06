@@ -1,12 +1,10 @@
+---
 Author: Hywel
 layout: post
 title: "动态规划"
-description: "动态规划；动态规划常用题目"
+description: "动态规划,动态规划常用题目,DP"
 date: 星期四, 06. 十二月 2018  17:34下午
 categories: "Algorithm"
-
-
-
 ---
 
 ### 基本思想：

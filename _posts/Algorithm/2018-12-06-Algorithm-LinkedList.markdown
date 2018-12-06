@@ -1,12 +1,10 @@
+---
 Author: Hywel
 layout: post
 title: "链表常用题及实现"
 description: "单链表，多链表"
 date: 星期四, 06. 十二月 2018  17:30下午
 categories: "Algorithm"
-
-
-
 ---
 
 # 链表
