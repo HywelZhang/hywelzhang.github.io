@@ -28,7 +28,10 @@ categories: "Algorithm"
 7. 合并两个sorted链表
 8. 两个链表相加
 9. 链表k-th后节点置前
+
+
 ```
+
 package pers.hywel.algorithm.linklist;
 
 /**
@@ -649,6 +652,7 @@ public class SinglyLinkedList {
         return head;
     }
 }
+
 ```
 
 
@@ -658,6 +662,8 @@ public class SinglyLinkedList {
 1. 基本的增删功能
 2. 多级链表展开
 3. 包含随机指针链表的深层拷贝
+
+
 
 ```
 package pers.hywel.algorithm.linklist;
