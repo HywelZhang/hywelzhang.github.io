@@ -1,12 +1,12 @@
 # Site settings
-title: Hywel的博客
+title: RobertZhang的博客
 email: 1051892427@qq.com
 description: > # this means to ignore newlines until "baseurl:"
   Hywel的博客
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: http://hywelzhang.github.io # the base hostname & protocol for your site
 rss_url: /pages/feed.xml
-author: Hywel 
+author: Robert
 
 # Sidebar filter
 # Choose 'tag' or 'category' as filter in sidebar.
@@ -16,7 +16,7 @@ recent_num: 15
 # Social account
 #twitter: Hywel
 #weibo: s
-github: hywelZhang
+github: RobertZhang
 #instagram: s
 linkedin: 华伟-张-b51695b5
 
@@ -26,7 +26,7 @@ linkedin: 华伟-张-b51695b5
 
 # disqus config
 disqus:
-  shortname: hywel
+  shortname: Robert
 
 # google analytics config
 ga:
@@ -48,3 +48,7 @@ gems:
   - jekyll-seo-tag
   - jekyll-feed
 
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-feed

@@ -1,0 +1,3 @@
+I"f<h2 id="spark-rdd">Spark RDD</h2>
+<p>Spark RDD（Resilient Disttributed Dataset）是整个Spark的核心基础，上层的Spark Streaming，Spark SQL等都依赖于RDD。Spark SQL里的DataFrame在执行时，最终也会转换为一系列的RDD操作。所以理解RDD非常重要，里边包含Spark的容错机制，分区，计算等核心内容。</p>
+:ET

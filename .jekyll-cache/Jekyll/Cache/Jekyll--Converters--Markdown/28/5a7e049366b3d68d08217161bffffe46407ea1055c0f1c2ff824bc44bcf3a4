@@ -1,0 +1,66 @@
+I"�<blockquote>
+  <p>此系列博客旨在于重温微积分，所讲内容会在很浅的层面。一方面是想快速回忆一遍高数内容，另一方面在于博主也是菜鸡一枚。所以重在大纲和理解，不在于考研那样变态的抠字眼。此系列博客使用教材为《calculus》8th，本人英语也是渣，所以对于理解有偏差的地方也希望各位看官指出。在以后使用过程中，有新理解也会更新到博客中，请大家多多指教。</p>
+</blockquote>
+
+<hr />
+
+<h3 id="一-基本术语">一. 基本术语</h3>
+
+<p><strong>对称性（奇偶函数）：</strong> 如果函数f在x的定义域满足<code class="language-plaintext highlighter-rouge">f(-x)=f(x)</code>，则f被称为偶函数(even function)，图像关于y轴对称。如果函数f在x的定义域满足<code class="language-plaintext highlighter-rouge">f(-x)=-f(x)</code>，则f被称为奇函数(odd function)，图像关于原点对称。</p>
+
+<p><strong>增函数和减函数：</strong> 在区间[a,b]上，任取两点x1,x2且有x1&lt;x2，如果恒有<code class="language-plaintext highlighter-rouge">f(x1)&lt;f(x2)</code>，则说函数f在区间[a,b]上是增函数。如果恒有<code class="language-plaintext highlighter-rouge">f(x1)&gt;f(x2)</code>，则函数f在区间[a,b]上是减函数。</p>
+
+<h3 id="二-函数变换">二. 函数变换</h3>
+<p>函数的基本变换可用下面两个图归纳</p>
+
+<p>函数平移：
+<img src="/assets/image/postImg/Maths/calculus/chapter1/figure1-translate.png" alt="平移" /></p>
+
+<p>对于f(x)整体乘积，相当于对函数图像进行高矮处理：
+<img src="/assets/image/postImg/Maths/calculus/chapter1/figure2-stretch.png" alt="延伸" /></p>
+
+<p>对于f(x)中x的乘积，相当于对图像的拉伸或者紧缩：
+<img src="/assets/image/postImg/Maths/calculus/chapter1/figure3.png" alt="对比" /></p>
+
+<h3 id="三-复合函数">三. 复合函数</h3>
+<ol>
+  <li>对两个函数f(x),g(x)进行加减乘除运算。如(f+g)(x)=f(x)+g(x), (fg)(x)=f(x)g(x)。设f(x)和g(x)的定义域分别为A,B，则此时复合函数的定义域为 \(A \cap B\)</li>
+  <li>如果是y=f(u)=f(g(x))，其中一个函数为另一个函数的自变量。这种函数被称为<em>composition</em>。\((f。g)(x)=f(g(x))\)中，f(g(x))的定义域需要从g(x)的值域进行筛选后在结合g(x)的定义域确定。</li>
+</ol>
+
+<h3 id="四-极限定义和性质">四. 极限定义和性质</h3>
+<p>通俗来讲，就是假设f(x)中x无限趋近于一个数字a（x永远不等于a）时，我们有如下式子：\[\lim\limits_{x \rightarrow +a}f(x) = L\]
+更通俗来讲，就是当\(x \to a\)时，有\(f(x) \to L\)，<strong>Note</strong> x永远不能等于a</p>
+
+<p><strong>极限的精确定义</strong><br />
+设函数f(x)在a的开区间上(不包含a点)有定义，如果\(\forall \epsilon &gt; 0\)都有对应的\(\delta &gt; 0\)使得<br />
+\(0 &lt; |x-a| &lt; \delta\) 时有 \(|f(x) - L| &lt; \epsilon\)<br />
+则我们说\[\lim\limits_{x \to a}f(x) = L \]</p>
+
+<h3 id="五-极限运算">五. 极限运算</h3>
+<p>假设 \(\lim\limits_{x \to a}f(x)\)和\(\lim\limits_{x \to a}g(x)\)存在，则有下列结算公式：</p>
+<ol>
+  <li>\(\lim\limits_{x \to a}[f(x)+g(x)]=\lim\limits_{x \to a}f(x) + \lim\limits_{x \to a}g(x)\)</li>
+  <li>\(\lim\limits_{x \to a}[f(x)-g(x)]=\lim\limits_{x \to a}f(x) - \lim\limits_{x \to a}g(x)\)</li>
+  <li>\(\lim\limits_{x \to a}[f(x)*g(x)]=\lim\limits_{x \to a}f(x) * \lim\limits_{x \to a}g(x)\)</li>
+  <li>\(\lim\limits_{x \to a}\frac{f(x)}{g(x)}=\frac{\lim\limits_{x \to a}f(x)}{\lim\limits_{x \to a}g(x)}\) (\(\lim\limits_{x \to a}g(x)\not = 0\))</li>
+  <li>\(\lim\limits_{x \to a}[cf(x)] = c\lim\limits_{x \to a}f(x)\)</li>
+  <li>\(\lim\limits_{x \to a}[f(x)]^{n} = [\lim\limits_{x \to a}f(x)]^{n}\) (n是正整数)</li>
+  <li>\(\lim\limits_{x \to a}c = c\)</li>
+  <li>\(\lim\limits_{x \to a}x = a\)</li>
+  <li>\(\lim\limits_{x \to a}x^{n} = a^{n}\)(结合6和8可得；n是正整数)</li>
+  <li>\(\lim\limits_{x \to a}\sqrt[n]{x} = \lim\limits_{x \to a} \sqrt[n]{a}\) (n是正整数)</li>
+  <li>\(\lim\limits_{x \to a}\sqrt[n]{f(x)} = \sqrt[n]{\lim\limits_{x \to a}f(x)}\)(n是正整数；如果n是偶数，我们设\(\lim\limits_{x \to a}f(x) &gt; 0\))</li>
+</ol>
+
+<p>几个相关推论：</p>
+<ol>
+  <li>\(\lim\limits_{x \to a}f(x) = L\) 当且仅当 \(\lim\limits_{x \to a^{-}}f(x) = L = \lim\limits_{x \to a^{+}}f(x)\)</li>
+  <li>如果x靠近a（a为任意值）时，\(f(x) \le g(x) \le h(x)\) 且有 \(\lim\limits_{x \to a}f(x) = \lim\limits_{x \to a}h(x) = L\),则
+\[\lim\limits_{x \to a}f(x) = L\]</li>
+</ol>
+
+<p>记一个常见极限图像在这
+<img src="/assets/image/postImg/Maths/calculus/chapter1/figure4.png" alt="sinx/x" /></p>
+
+:ET

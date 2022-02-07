@@ -1,0 +1,3 @@
+I"�<p>本方法采用离线安装，需要先下载好cloudera manager和CDH的parcel安装包。<br />
+系统为CentOS，jdk版本为1.8，CDH版本5.5.4和5.10.0都安装过，没有区别，所以CDH版本也不影响。</p>
+:ET

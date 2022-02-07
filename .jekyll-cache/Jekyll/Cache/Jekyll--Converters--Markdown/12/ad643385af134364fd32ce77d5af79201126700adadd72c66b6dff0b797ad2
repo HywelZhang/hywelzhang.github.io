@@ -1,0 +1,9 @@
+I"�<h2 id="相关定理">相关定理</h2>
+<h3 id="极值最值">极值，最值</h3>
+<ol>
+  <li>最大值(absolute maximum): \(f(c) \ge f(x)\)，x为定义域任一点</li>
+  <li>最小值(absolute minimum): \(f(c) \lt f(x)\)，x为定义域任一点</li>
+  <li>极大值(local maximum): \(f(c) \ge f(x)\)，x is near c</li>
+  <li>极小值(local minimum): \(f(x) \lt f(x)\),x is near c</li>
+</ol>
+:ET

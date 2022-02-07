@@ -7,14 +7,177 @@ date: 星期三, 22. 三月 2017 11:03上午
 categories: 杂记
 ---
 
-### Git查看分支
+[TOC]
 
-列出本地分支
-> git branch
+# Git常用操作
 
-列出本地和远程所有分支
+## 代码拉取
+
+首先，需要切换到需要更新的分支，才能通过fetch更新最新代码
+
+> git fetch
+
+git pull = git fetch + git merge
+
+## 代码合并
+
+> git merge <option branch-name> // 默认为当前关联的同名分支
+
+## 提交代码
+
+### 常用流程
+
+提交三流程
+
+> // 暂存
+>
+> git add 
+>
+> // 提交本地仓库
+>
+> git commit -m "提交注释"
+>
+> // 同步到远程仓库
+>
+> git push origin HEAD:refs/for/remote-branch
+
+### 流程说明
+
+**概念：**
+
+**工作区：**当前修改的文件
+
+**暂存区staged：**git add，会把修改文件存储到本地的暂存区
+
+**本地仓库：**git commit，本地修改提交到本地仓库
+
+**远程仓库origin：**git push，将本地仓库同步给远程仓库
+
+## 修改撤销
+
+1. 撤销本地提交，恢复本地仓库，等于撤销git commit
+
+> git reset --soft HEAD^
+>
+> // 说明：
+>
+> 参数1：
+>
+> --mixed 
+> 不删除工作空间改动代码，撤销commit，并且撤销git add . （默认参数）
+>
+> --soft  
+> 不删除工作空间改动代码，撤销commit，不撤销git add . 
+>
+> --hard
+> 删除工作空间改动代码，撤销commit，撤销git add . 
+>
+> 注意完成这个操作后，就恢复到了上一次的commit状态。
+>
+> 参数2：
+>
+> HEAD^ ： 恢复到上一个版本，等于HEAD~1
+>
+> HAED~2：恢复到前两次提交前（HEAD~n， 恢复到前第n次提交）
+
+
+
+2. 撤销暂存区内容，等于撤销git add
+
+> 撤销暂存区修改
+>
+> git restore --staged <file>
+>
+> // 恢复到前n个commit版本
+>
+> git restore --source=HEAD~n . 
+>
+> git restore --source=<commitID> .
+
+3. 撤销本地工作区修改。等于放弃本地修改，恢复原状
+
+> // 下列两个命令效果相同
+>
+> git restore <file>
+>
+> git checkout -- <file>
+
+
+
+## 分支管理
+
+### 分支查看
+
+1. 查看本地分支
+
 > git branch -a 
 
-### Git切换分支
+2. 查看远程分支
 
-git checkout
+> git branch -r 
+
+3. 更新远程分支
+
+> git fetch 
+
+### 分支新建
+
+1. 新建本地分支
+
+> git checkout -b new-branch  //在当前分支下创建new-branch的本地分支分支
+
+2. 新建远程分支
+
+> git push origin new-branch:new-branch  //将new-branch分支推送到远程，并新建一个同名远程分支   
+
+### 分支删除
+
+1. 删除本地分支
+
+> // 删除本地分支local-branch
+> git branch -d local-branch
+
+2. 删除远程仓库分支
+
+> // 删除远程分支ori-branch
+> git push origin :ori-branch
+> // 或
+> git push origin --delete ori-branch
+
+### 分支切换
+
+1. 切换到指定分支
+
+> git checkout <branch-name>
+
+### 分支合并
+
+#### 常用操作流程
+
+1. 执行合并分支：master合并dev分支
+
+   > ```
+   > // 把当前切换到master分支，然后执行下列合并操作
+   > git merge dev
+   > ```
+
+2. 按照提示，修改conflict文件，解决冲突（如果存在冲突）
+
+3. 中途查看冲突是否修复完
+
+   > ```
+   > // 检查是否还存在带有冲突标记的文件。
+   > git diff --check
+   > ```
+
+4. 冲突解决完成以后
+
+   提交三部曲
+
+   > ```
+   > git add .
+   > git commit -m "notes"
+   > git push origin HEAD:refs/for/master
+   > ```
+
+   

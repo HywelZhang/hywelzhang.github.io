@@ -1,0 +1,94 @@
+I"k<h2 id="集群监控">集群监控</h2>
+<p>集群有三种健康状态，<strong>green</strong>,<strong>yellow</strong>,<strong>red</strong>。通过命令<code class="language-plaintext highlighter-rouge">GET /_cluster/health</code>，可以查看到集群的健康状况</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+   "cluster_name":          "elasticsearch",
+   "status":                "green", &lt;1&gt;
+   "timed_out":             false,
+   "number_of_nodes":       1,
+   "number_of_data_nodes":  1,
+   "active_primary_shards": 0,
+   "active_shards":         0,
+   "relocating_shards":     0,
+   "initializing_shards":   0,
+   "unassigned_shards":     0
+}
+
+status字段：
+状态	意义
+green	所有主分片和从分片都可用
+yellow	所有主分片可用，但存在不可用的从分片
+red	    存在不可用的主要分片
+</code></pre></div></div>
+<p>什么是分片，请接着看下去。。。</p>
+
+<h2 id="分片">分片</h2>
+
+<p>为了将数据添加到 Elasticsearch，我们需要 <strong>索引(index)</strong> —— 相当于数据库，存储关联数据的地方。实际上，索引只是一个 <strong>逻辑命名空间(logical namespace)</strong>，它指向一个或多个 <strong>分片(shards)</strong>。</p>
+
+<p><strong>分片(shard)</strong> 是 <strong>工作单元(worker unit)</strong> 底层的一员，它只负责保存索引中所有数据的一小片。在接下来的《深入分片》一章中，我们还将深入学习分片是如何运作的，但是现在你只要知道分片是一个独立的Lucene实例既可，并且它自身也是一个完整的搜索引擎。我们的文档存储并且被索引在分片中，但是我们的程序并不会直接与它们通信。取而代之，它们直接与索引进行通信的。</p>
+
+<p>在 elasticsearch 中，分片用来分配集群中的数据。把分片想象成一个数据的容器。数据被存储在分片中，然后分片又被分配在集群的节点上。当你的集群扩展或者缩小时，elasticsearch 会自动的在节点之间迁移分配分片，以便集群保持均衡。</p>
+
+<p>分片分为 主分片(primary shard) 以及 从分片(replica shard) 两种。在你的索引中，每一个文档都属于一个主分片，所以具体有多少主分片取决于你的索引能存储多少数据。</p>
+
+<p>虽然理论上主分片对存储多少数据是没有限制的。分片的最大数量完全取决于你的实际状况：硬件的配置、文档的大小和复杂度、如何索引和查询你的文档，以及你期望的响应时间。
+从分片只是主分片的一个副本，它用于提供数据的冗余副本，在硬件故障时提供数据保护，同时服务于搜索和检索这种只读请求。</p>
+
+<p>索引中的主分片的数量在索引创建后就固定下来了，但是从分片的数量可以随时改变。</p>
+
+<p>接下来，我们在空的单节点集群中上创建一个叫做 blogs 的索引。一个索引默认设置了5个主分片，但是为了演示，我们这里只设置3个主分片和一组从分片（每个主分片有一个从分片对应）：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PUT /blogs
+{
+   "settings" : {
+      "number_of_shards" : 3,
+      "number_of_replicas" : 1
+   }
+}
+</code></pre></div></div>
+
+<p>现在，我们的集群看起来就像下图所示了有索引的单节点集群，因为是单节点，所以这三个主分片都被分配在 Node 1。
+<img src="/assets/image/postImg/ElasticSearch/figure1.png" alt="node1" /></p>
+
+<p>如果我们现在查看 集群健康(cluster-health) ，我们将得到如下信息：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{
+   "cluster_name":          "elasticsearch",
+   "status":                "yellow", &lt;1&gt;
+   "timed_out":             false,
+   "number_of_nodes":       1,
+   "number_of_data_nodes":  1,
+   "active_primary_shards": 3,
+   "active_shards":         3,
+   "relocating_shards":     0,
+   "initializing_shards":   0,
+   "unassigned_shards":     3 &lt;2&gt;
+}
+</code></pre></div></div>
+<p>集群的 status 为 yellow.
+我们的三个从分片还没有被分配到节点上。
+集群的健康状况 yellow 意味着所有的 主分片(primary shards) 启动并且运行了，这时集群已经可以成功的处理任意请求，但是 从分片(replica shards) 没有完全被激活。事实上，当前这三个从分片都处于 unassigned（未分配）的状态，它们还未被分配到节点上。在同一个节点上保存相同的数据副本是没有必要的，如果这个节点故障了，就等同于所有的数据副本也丢失了。</p>
+
+<p>现在我们的集群已经可用了，但是依旧存在因硬件故障而导致数据丢失的风险。</p>
+
+<h2 id="扩展和容灾">扩展和容灾</h2>
+<h3 id="添加节点">添加节点</h3>
+<p>添加第二个节点，你可以使用与第一个节点相同的方式启动第二个节点（你可以参考 入门-》安装-》运行 Elasticsearch 一章），而且在同一个目录——多个节点可以分享同一个目录。</p>
+
+<p>只要第二个节点与第一个节点的 cluster.name 相同（参见./config/elasticsearch.yml文件中的配置），它就能自动发现并加入到第一个节点的集群中。如果没有，请结合日志找出问题所在。这可能是多播（multicast）被禁用，或者防火墙阻止了节点间的通信。</p>
+
+<p>这样前一章的三个分片副本会自动迁移到新机器，实现高可用性。</p>
+
+<p>我们可以使用这样的方式，向已有集群扩展节点。ES会自动进行平衡负载，将分片均衡分布到集群中，包括新节点上。</p>
+
+<blockquote>
+  <p>提示
+增加节点数量和备份数，让每个节点都利用起来，分布有主分区，可以用于响应请求。能够提升搜索性能
+但是，仅仅是在同样数量的节点上增加从分片的数量是根本不能提高性能的，因为每个分片都有访问系统资源的权限。你需要升级硬件配置以提高吞吐量。
+不过更多的从分片意味着我们有更多的冗余：通过上文的配置，我们可以承受两个节点的故障而不会丢失数据。</p>
+</blockquote>
+
+<h3 id="故障恢复">故障恢复</h3>
+<p>如果在多节点的ES集群上，某台节点挂掉，并不会影响集群运行和数据的完整。当某节点挂掉，对于该节点上丢失的主分区，ES会将存于其他节点的从分区提升为主分区以响应请求。当然现在集群状态会显示为yellow，这是因为少了一个从分区，达不到我们设定的副本数量，但是不影响我们集群的使用。当挂掉的节点恢复后，如果该节点还有存有以前的内容，ES会尝试去重新利用他们，并且只会复制在故障期间的变更数据来保证数据的一致。</p>
+
+:ET

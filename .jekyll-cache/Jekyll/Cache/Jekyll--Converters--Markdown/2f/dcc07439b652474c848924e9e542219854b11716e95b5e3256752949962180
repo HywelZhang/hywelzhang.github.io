@@ -1,0 +1,3 @@
+I"<h2 id="集群监控">集群监控</h2>
+<p>集群有三种健康状态，<strong>green</strong>,<strong>yellow</strong>,<strong>red</strong>。通过命令<code class="language-plaintext highlighter-rouge">GET /_cluster/health</code>，可以查看到集群的健康状况</p>
+:ET

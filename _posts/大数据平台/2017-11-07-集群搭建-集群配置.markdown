@@ -1,0 +1,65 @@
+---
+Author: Hywel
+layout: post
+title: 大数据集群搭建之集群配置 
+description: 集群搭建，集群配置，hdfs，yarn
+date: 星期二, 07. 十一月 2017  5:34下午
+categories: 大数据架构
+---
+
+因为集群搭建采用的是CM（cloudera manager） + CDH 的模式搭建，所以配置文件地址相对于原生的hadoop框架有些区别。如何利用CM搭建大数据集群详情请参见上一篇博客 [大数据集群搭建之CDH搭建](https://hywelzhang.github.io/2017/11/03/%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-CDH%E6%90%AD%E5%BB%BA.html)
+
+首先，如果使用了CM来进行集群管理，集群所有的配置信息实际是保存在安装CM时设置的数据库里。每次在集群启动的时候，会去数据库加载集群的配置信息，然后通过agent分发到节点机器,并暂存当前运行的配置信息到`/var/run/cloudera-scm-agent/process/###-[service]-[SERVICE-ROLE]`这个目录下，所以这个目录里才是当前集群正在运行的最新配置信息。当在cm的web UI上修改配置后，也会马上映射到这个文件夹下的相应配置文件里。当然`/etc/[service]/conf`下的配置文件对集群其实并没有什么用，这个只是集群例如重启时，将上一次运行的配置（也就是前边说的那个目录）映射过来的而已，以备某些cli需要的时候使用。所以无论你对`/etc/[service]/conf/`下的配置文件进行什么修改，都并不会对集群产生影响，还是老实去cm的web管理界面上进行配置修改。虽然配置位置和原生hadoop不一样，但是对应的配置属性都是一样。
+
+## HDFS
+cm管理的CDH版本中的hdfs配置文件目录：  
+- /var/run/cloudera-scm-agent/process/###-hdfs-[SERVICE-ROLE]/ （当前集群正在运行的实时配置信息）
+- /etc/hdfs/conf/ (集群配置文件)
+
+HDFS的主要配置文件：
++ core-site.xml 用于定义系统级别的集群全局参数，例如URL，security等
++ hdfs-site.xml 用于定于节点，数据节点，文件副本，文件权限等数据与节点相关属性
++ mapred-site.xml 用于定义JobHistory Server和应用程序等Mapreduce的相关参数
++ hadoop-env.sh 用于hdfs读取环境变量的脚本，原生的hadoop配置可能需要在这个文件里配置添加jdk路径
+
+**常用hdfs配置属性**（仅部分目前配置过的属性）：
+
+1. `fs.defaultFS` (core-site.xml) -- 配置文件系统的主机和端口:
+
+```
+ <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://<hostname>:8020</value>
+  </property>
+```
+
+2. `dfs.blocksize`（hdfs-site.xml) -- 数据块大小  
+默认为128m（1.X版本默认64m，可配置，不用纠结默认大小）。大小远小于块的文件并不会占用整个块，但是也不能把块大小设置得太小。如果太小，1.会对磁盘寻道造成压力，加长文件查找时间。2.因为块信息会维护到NameNode里边，如果块太多会对NameNode造成很大的压力。当然也不能将块设置得太大，1.数据块越大，数据加载时间越长。2.还有块如果太大，计算时，并行度也不够，需要重新划分。当然还有其他没有讲到的优缺点，块大小需要根据自己的业务数据和文件的大小来设置。
+
+3. `dfs.replication`(hdfs-site.xml) -- 文件备份数  
+默认为3，该属性旨在设置同一份数据在集群中的总共数量。一般3就足够，当你集群很小，可是依据情况减为2。
+
+4. `dfs.datanode.failed.volumes.tolerated`（hdfs-site.xml) -- datanode磁盘损坏容忍数  
+设置可以容忍当前datanode多少个卷损坏，如果设置为0，datanode只要有一个卷损坏，那么这个datanode也就无法使用。
+
+5. `dfs.data.dir`(hdfs-site.xml) -- 数据存放位置  
+设置hdfs的数据在DataNode上的存放路径
+
+6. `dfs.name.dir`(hdfs-site.xml) -- NameNode的FSImage在本地文件系统的存放位置
+
+## yarn
+yarn的配置文件主要在`/etc/hadoop/yarn-site.xml`,当然对于cm管理的CDH集群来说，yarn的当前实际生效的配置文件也在`/var/run/cloudera-scm-agent/process/###-[service]-[SERVICE-ROLE]`这个目录下。
+
+yanr最主要的配置文件`yarn-site.xml`:
+1. `yarn.nodemanager.resource.memory-mb` -- 单台节点分给yarn调度的总物理内存  
+设置每个节点需要划多少内存给yarn进行资源调度，单位为M。设置的时候，请记得保留系统所需部分内存。
+
+2. `yarn.nodemanager.resource.cpu-vcores` -- 单台节点分给yarn调度的总物理CPU数  
+设置每个节点划多少个CPU给yarn进行资源调度，和内存划分一样，记得保留出系统所需的CPU。
+
+3. `yarn.scheduler.minimum-allocation-mb` -- 节点上container的最少内存，默认为1024MB  
+同理CPU也有相应的配置属性，`yarn.scheduler.minimum-allocation-vcores`默认1
+
+4. `yarn.scheduler.maximum-allocation-mb` -- container最大可划分内存，默认8GB  
+相应的CPU配置属性，`yarn.scheduler.maximum-allocation-vcores`，最大CPU数，默认32
+
