@@ -1,2 +1,0 @@
-I"�<p>Spark程序提交作业主要有三种运行模式，Standalong，Spark On Yarn Cluster，Spark On Yarn Client模式，先就生产环境使用最多的Spark On Yarn Cluster模式</p>
-:ET

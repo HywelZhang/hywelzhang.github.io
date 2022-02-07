@@ -1,3 +1,0 @@
-I"\<p>vim中使用<code class="language-plaintext highlighter-rouge">y/d/x</code>复制剪切的内容，一般情况下，只能在该文件内粘贴(p)。但是我们有时候很需要这部分内容复制到另一个文件，或者外部应用程序中，我们该怎么做呢？<br />
-这里不得不讲讲，vim的复制内容存储位置。</p>
-:ET
